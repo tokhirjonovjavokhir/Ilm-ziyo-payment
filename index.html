@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>To'lov kvitansiyasi</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0F1115;
+    --paper:#FBF9F4;
+    --paper-shadow:#EDE8DC;
+    --line:#D8D2C4;
+    --text:#1B1D22;
+    --muted:#767A82;
+    --emerald:#167A5C;
+    --emerald-dark:#0F5E46;
+    --copper:#C97A2B;
+    --copper-dark:#A5611E;
+    --danger:#B23B3B;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--ink);
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(22,122,92,0.20), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(201,122,43,0.12), transparent 45%);
+    min-height:100vh;
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding:28px 16px 40px;
+  }
+  .wrap{width:100%;max-width:420px;}
+
+  .brand{
+    text-align:center;
+    margin-bottom:18px;
+    opacity:0;
+    animation:fadeUp .5s ease forwards;
+  }
+  .brand .mark{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:.14em;
+    color:#EDE8DC;
+    text-transform:uppercase;
+  }
+  .brand .sub{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:#8B8F97;
+    margin-top:4px;
+    letter-spacing:.04em;
+  }
+
+  .ticket{
+    position:relative;
+    background:var(--paper);
+    border-radius:2px;
+    box-shadow:0 24px 60px -20px rgba(0,0,0,.6), 0 2px 0 var(--paper-shadow);
+    opacity:0;
+    transform:translateY(10px);
+    animation:fadeUp .55s .08s ease forwards;
+  }
+  .zigzag{
+    height:12px;
+    width:100%;
+    background:
+      linear-gradient(135deg, var(--ink) 25%, transparent 25%) 0 0,
+      linear-gradient(225deg, var(--ink) 25%, transparent 25%) 0 0;
+    background-size:16px 24px;
+    background-repeat:repeat-x;
+  }
+  .zigzag.bottom{transform:scaleY(-1);}
+
+  .ticket-body{padding:26px 24px 22px;}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:.08em;
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:4px;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    margin:0 0 18px;
+    letter-spacing:-.01em;
+  }
+
+  .perf{
+    border-top:1.5px dashed var(--line);
+    margin:18px 0;
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    margin-bottom:7px;
+  }
+  .field{margin-bottom:18px;}
+
+  input[type="text"], input[type="number"]{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:12px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    color:var(--text);
+    outline:none;
+    transition:border-color .15s;
+  }
+  input:focus{border-color:var(--emerald);}
+  input.err{border-color:var(--danger);}
+
+  .amount-row{position:relative;}
+  .amount-row input{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:19px;
+    font-weight:500;
+    padding-right:52px;
+  }
+  .amount-suffix{
+    position:absolute;
+    right:13px; top:50%; transform:translateY(-50%);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .toggle{
+    display:flex;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .toggle button{
+    flex:1;
+    border:none;
+    background:#fff;
+    padding:12px 0;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    transition:.15s;
+  }
+  .toggle button + button{border-left:1.5px solid var(--line);}
+  .toggle button.active.naqd{background:var(--copper);color:#fff;}
+  .toggle button.active.karta{background:var(--emerald);color:#fff;}
+
+  #kvitField{max-height:0;overflow:hidden;transition:max-height .25s ease, margin .25s ease;}
+  #kvitField.show{max-height:100px;margin-bottom:18px;}
+  #imgField{max-height:0;overflow:hidden;transition:max-height .3s ease, margin .3s ease;}
+  #imgField.show{max-height:320px;margin-bottom:18px;}
+
+  .upload{
+    border:1.5px dashed var(--line);
+    border-radius:8px;
+    padding:16px;
+    text-align:center;
+    background:#fff;
+    cursor:pointer;
+    position:relative;
+  }
+  .upload.has-img{padding:0;border-style:solid;overflow:hidden;}
+  .upload input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .upload .hint{font-size:13px;color:var(--muted);}
+  .upload .hint b{color:var(--text);}
+  .upload img{width:100%;display:block;max-height:220px;object-fit:cover;}
+  .upload .retake{
+    position:absolute;bottom:8px;right:8px;
+    background:rgba(15,17,21,.75);color:#fff;
+    font-size:11px;padding:5px 10px;border-radius:20px;
+    font-family:'Inter',sans-serif;
+  }
+
+  .total-strip{
+    font-family:'IBM Plex Mono',monospace;
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding-top:14px;
+    border-top:1.5px dashed var(--line);
+    margin-top:4px;
+  }
+  .total-strip .lbl{font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;}
+  .total-strip .val{font-size:20px;font-weight:600;color:var(--emerald-dark);transition:opacity .15s;}
+
+  .submit{
+    width:100%;
+    margin-top:20px;
+    border:none;
+    border-radius:8px;
+    padding:15px 0;
+    background:var(--ink);
+    color:#F4F1EA;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing:.02em;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s;
+  }
+  .submit:active{transform:scale(.98);}
+  .submit:disabled{opacity:.5;}
+
+  .errline{font-size:12px;color:var(--danger);margin-top:6px;display:none;}
+  .errline.show{display:block;}
+
+  .foot{
+    text-align:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    color:#6B6F76;
+    margin-top:14px;
+    letter-spacing:.06em;
+  }
+
+  /* success state */
+  .success{
+    display:none;
+    text-align:center;
+    padding:40px 20px;
+    opacity:0;
+    animation:fadeUp .4s ease forwards;
+  }
+  .success.show{display:block;}
+  .success .stamp{
+    width:64px;height:64px;border-radius:50%;
+    background:var(--emerald);
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+    color:#fff;font-size:28px;
+  }
+  .success h2{font-family:'Space Grotesk',sans-serif;font-size:19px;margin:0 0 8px;}
+  .success p{font-size:13px;color:var(--muted);line-height:1.5;margin:0;}
+  .success .id{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--text);
+    background:#F1EEE4;
+    display:inline-block;
+    padding:6px 12px;
+    border-radius:20px;
+    margin-top:14px;
+  }
+
+  @keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="brand">
+    <div class="mark">O'quv Markazi</div>
+    <div class="sub">TO'LOV KVITANSIYASI · #FORM</div>
+  </div>
+
+  <div class="ticket" id="ticket">
+    <div class="zigzag"></div>
+    <div class="ticket-body">
+
+      <div id="formView">
+        <div class="eyebrow"><span>KIRITISH FORMASI</span><span id="dateNow"></span></div>
+        <h1>To'lovni tasdiqlash</h1>
+
+        <div class="field">
+          <label>Ism familiya</label>
+          <input type="text" id="ism" placeholder="Aliyev Vali" autocomplete="off">
+          <div class="errline" id="errIsm">Ism familiyani kiriting</div>
+        </div>
+
+        <div class="field">
+          <label>To'lov turi</label>
+          <div class="toggle">
+            <button type="button" class="naqd active" data-type="Naqd">Naqd pul</button>
+            <button type="button" class="karta" data-type="Karta">Karta / O'tkazma</button>
+          </div>
+        </div>
+
+        <div class="field" id="kvitField" class="show">
+          <label>Kvitansiya raqami</label>
+          <input type="text" id="kvitRaqam" placeholder="Masalan: 0047" inputmode="numeric">
+        </div>
+
+        <div class="field">
+          <label>To'lov summasi</label>
+          <div class="amount-row">
+            <input type="number" id="summa" placeholder="500 000" inputmode="numeric">
+            <span class="amount-suffix">so'm</span>
+          </div>
+          <div class="errline" id="errSumma">To'g'ri summa kiriting</div>
+        </div>
+
+        <div class="field" id="imgField">
+          <label>Bank cheki / to'lov skrinshoti</label>
+          <div class="upload" id="uploadBox">
+            <input type="file" accept="image/*" id="fileInput">
+            <div class="hint" id="uploadHint"><b>Rasm biriktirish</b><br>Kamera yoki galereyadan tanlang</div>
+            <img id="previewImg" style="display:none;">
+            <span class="retake" id="retakeTag" style="display:none;">Almashtirish</span>
+          </div>
+          <div class="errline" id="errImg">Chek rasmini biriktiring</div>
+        </div>
+
+        <div class="perf"></div>
+
+        <div class="total-strip">
+          <span class="lbl">Jami</span>
+          <span class="val" id="totalVal">0 so'm</span>
+        </div>
+
+        <button class="submit" id="submitBtn">Yuborish</button>
+      </div>
+
+      <div class="success" id="successView">
+        <div class="stamp">&#10003;</div>
+        <h2>Yuborildi</h2>
+        <p>Ma'lumotlaringiz qabul qilindi.<br>Admin tasdiqlashini kuting — natija shu botga xabar qilinadi.</p>
+        <div class="id" id="successId">ID: —</div>
+        <button class="submit" id="newPaymentBtn" style="margin-top:22px;">Yana to'lov kiritish</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:16px;">Chiqish uchun yuqoridagi ✕ (Yopish) tugmasini bosing</p>
+      </div>
+
+    </div>
+    <div class="zigzag bottom"></div>
+  </div>
+
+  <div class="foot">Ma'lumotlar shifrlangan tarzda yuboriladi</div>
+</div>
+
+<script>
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  if (tg) { tg.ready(); tg.expand(); }
+
+  // ====== SOZLAMA: backend (Apps Script Web App) manzili ======
+  // ====== SOZLAMA: backend (Apps Script Web App) manzili ======
+  const BACKEND_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+  // ==============================================================
+  // ==============================================================
+
+  document.getElementById('dateNow').textContent = new Date().toLocaleDateString('uz-UZ');
+
+  let tolovTuri = "Naqd";
+  let imageBase64 = null;
+  let imageMime = null;
+
+  const imgField = document.getElementById('imgField');
+
+  function syncFieldsByType(){
+    document.getElementById('kvitField').classList.toggle('show', tolovTuri === "Naqd");
+    imgField.classList.toggle('show', tolovTuri === "Karta");
+  }
+  syncFieldsByType();
+
+  document.querySelectorAll('.toggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.toggle button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      tolovTuri = btn.dataset.type;
+      syncFieldsByType();
+    });
+  });
+
+  const summaInput = document.getElementById('summa');
+  const totalVal = document.getElementById('totalVal');
+  summaInput.addEventListener('input', ()=>{
+    const n = parseInt(summaInput.value || "0", 10);
+    totalVal.textContent = (isNaN(n) ? 0 : n).toLocaleString('uz-UZ') + " so'm";
+  });
+
+  const fileInput = document.getElementById('fileInput');
+  const uploadBox = document.getElementById('uploadBox');
+  const uploadHint = document.getElementById('uploadHint');
+  const previewImg = document.getElementById('previewImg');
+  const retakeTag = document.getElementById('retakeTag');
+
+  fileInput.addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    imageMime = file.type || "image/jpeg";
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      imageBase64 = ev.target.result.split(',')[1];
+      previewImg.src = ev.target.result;
+      previewImg.style.display = 'block';
+      uploadHint.style.display = 'none';
+      retakeTag.style.display = 'block';
+      uploadBox.classList.add('has-img');
+      showError('errImg', false);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function showError(id, show){
+    document.getElementById(id).classList.toggle('show', show);
+  }
+
+  document.getElementById('submitBtn').addEventListener('click', async ()=>{
+    const ism = document.getElementById('ism').value.trim();
+    const summa = parseInt(summaInput.value || "0", 10);
+    const kvitRaqam = document.getElementById('kvitRaqam').value.trim();
+
+    let valid = true;
+    if(!ism){ showError('errIsm', true); valid = false; } else showError('errIsm', false);
+    if(!summa || summa <= 0){ showError('errSumma', true); valid = false; } else showError('errSumma', false);
+    if(tolovTuri === "Karta" && !imageBase64){ showError('errImg', true); valid = false; } else showError('errImg', false);
+    if(!valid) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = "Yuborilmoqda...";
+
+    const user = tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : {};
+
+    const payload = {
+      source: "miniapp",
+      init_data: tg ? tg.initData : "",
+      telegram_id: user.id || null,
+      telegram_username: user.username || "",
+      telegram_first_name: user.first_name || "",
+      ism: ism,
+      tolov_turi: tolovTuri,
+      summa: summa,
+      kvitansiya_raqami: tolovTuri === "Naqd" ? kvitRaqam : "",
+      image_base64: imageBase64 || null,
+      image_mime: imageMime || null
+    };
+
+    async function trySend(){
+      const res = await fetch(BACKEND_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.error || "server_error");
+      return json;
+    }
+
+    try{
+      let result;
+      try {
+        result = await trySend();
+      } catch(firstErr){
+        // xatoda bir marta qayta urinish
+        result = await trySend();
+      }
+      document.getElementById('formView').style.display = 'none';
+      document.getElementById('successView').classList.add('show');
+      document.getElementById('successId').textContent = "ID: " + (result.id || "—");
+      if(tg) tg.HapticFeedback && tg.HapticFeedback.notificationOccurred('success');
+    }catch(err){
+      btn.disabled = false;
+      btn.textContent = "Yuborish";
+      alert("Yuborilmadi. Internetni tekshirib, qayta urinib ko'ring.");
+    }
+  });
+
+  document.getElementById('newPaymentBtn').addEventListener('click', ()=>{
+    // formani tozalab, boshidan boshlash
+    document.getElementById('ism').value = "";
+    document.getElementById('kvitRaqam').value = "";
+    summaInput.value = "";
+    totalVal.textContent = "0 so'm";
+    imageBase64 = null; imageMime = null;
+    previewImg.style.display = 'none';
+    previewImg.src = "";
+    uploadHint.style.display = 'block';
+    retakeTag.style.display = 'none';
+    uploadBox.classList.remove('has-img');
+    document.querySelectorAll('.toggle button').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.toggle .naqd').classList.add('active');
+    tolovTuri = "Naqd";
+    syncFieldsByType();
+    showError('errIsm', false); showError('errSumma', false); showError('errImg', false);
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = false;
+    btn.textContent = "Yuborish";
+
+    document.getElementById('successView').classList.remove('show');
+    document.getElementById('formView').style.display = 'block';
+  });
+</script>
+</body>
+</html>
