@@ -335,7 +335,7 @@
         <p>Ma'lumotlaringiz qabul qilindi.<br>Admin tasdiqlashini kuting — natija shu botga xabar qilinadi.</p>
         <div class="id" id="successId">ID: —</div>
         <button class="submit" id="newPaymentBtn" style="margin-top:22px;">Yana to'lov kiritish</button>
-        <p style="font-size:12px;color:var(--muted);margin-top:16px;">Chiqish uchun yuqoridagi ✕ (Yopish) tugmasini bosing</p>
+        <button class="submit" id="closeBtn" style="margin-top:10px;background:transparent;color:var(--muted);border:1.5px solid var(--line);">Yopish</button>
       </div>
 
     </div>
@@ -471,6 +471,10 @@
       btn.textContent = "Yuborish";
       alert("Yuborilmadi. Internetni tekshirib, qayta urinib ko'ring.");
     }
+  });
+
+  document.getElementById('closeBtn').addEventListener('click', ()=>{
+    if(tg) tg.close(); else window.close();
   });
 
   document.getElementById('newPaymentBtn').addEventListener('click', ()=>{
