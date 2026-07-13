@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>To'lov kvitansiyasi</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">pa
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
@@ -114,7 +114,7 @@
   }
   .field{margin-bottom:18px;}
 
-  input[type="text"], input[type="number"]{
+  input[type="text"], input[type="number"], select{
     width:100%;
     border:1.5px solid var(--line);
     background:#fff;
@@ -126,30 +126,13 @@
     outline:none;
     transition:border-color .15s;
   }
-  input:focus{border-color:var(--emerald);}
-  input.err{border-color:var(--danger);}
-
-  select{
-    width:100%;
-    border:1.5px solid var(--line);
-    background:#fff;
-    border-radius:8px;
-    padding:12px 38px 12px 13px;
-    font-family:'Inter',sans-serif;
-    font-size:15px;
-    color:var(--text);
-    outline:none;
-    transition:border-color .15s;
-    appearance:none;
-    -webkit-appearance:none;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23767A82' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
-    background-repeat:no-repeat;
-    background-position:right 12px center;
-    background-size:16px;
+  select{ appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23767A82' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat:no-repeat; background-position:right 13px center; background-size:16px;
   }
-  select:focus{border-color:var(--emerald);}
-  select.placeholder{color:var(--muted);}
-  select.err{border-color:var(--danger);}
+  select:invalid{ color:var(--muted); }
+  input:focus, select:focus{border-color:var(--emerald);}
+  input.err, select.err{border-color:var(--danger);}
 
   .amount-row{position:relative;}
   .amount-row input{
@@ -310,7 +293,7 @@
 
         <div class="field">
           <label>Fan</label>
-          <select id="fan" class="placeholder">
+          <select id="fan">
             <option value="" disabled selected>Fanni tanlang</option>
             <option value="Arab tili">Arab tili</option>
             <option value="Rus tili">Rus tili</option>
@@ -416,12 +399,6 @@
     });
   });
 
-  const fanSelect = document.getElementById('fan');
-  fanSelect.addEventListener('change', ()=>{
-    fanSelect.classList.toggle('placeholder', !fanSelect.value);
-    if(fanSelect.value) showError('errFan', false);
-  });
-
   const summaInput = document.getElementById('summa');
   const totalVal = document.getElementById('totalVal');
   summaInput.addEventListener('input', ()=>{
@@ -458,7 +435,7 @@
 
   document.getElementById('submitBtn').addEventListener('click', async ()=>{
     const ism = document.getElementById('ism').value.trim();
-    const fan = fanSelect.value;
+    const fan = document.getElementById('fan').value;
     const summa = parseInt(summaInput.value || "0", 10);
     const kvitRaqam = document.getElementById('kvitRaqam').value.trim();
 
@@ -527,8 +504,7 @@
   document.getElementById('newPaymentBtn').addEventListener('click', ()=>{
     // formani tozalab, boshidan boshlash
     document.getElementById('ism').value = "";
-    fanSelect.value = "";
-    fanSelect.classList.add('placeholder');
+    document.getElementById('fan').value = "";
     document.getElementById('kvitRaqam').value = "";
     summaInput.value = "";
     totalVal.textContent = "0 so'm";
