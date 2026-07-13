@@ -129,6 +129,28 @@
   input:focus{border-color:var(--emerald);}
   input.err{border-color:var(--danger);}
 
+  select{
+    width:100%;
+    border:1.5px solid var(--line);
+    background:#fff;
+    border-radius:8px;
+    padding:12px 38px 12px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    color:var(--text);
+    outline:none;
+    transition:border-color .15s;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23767A82' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    background-size:16px;
+  }
+  select:focus{border-color:var(--emerald);}
+  select.placeholder{color:var(--muted);}
+  select.err{border-color:var(--danger);}
+
   .amount-row{position:relative;}
   .amount-row input{
     font-family:'IBM Plex Mono',monospace;
@@ -287,6 +309,22 @@
         </div>
 
         <div class="field">
+          <label>Fan</label>
+          <select id="fan" class="placeholder">
+            <option value="" disabled selected>Fanni tanlang</option>
+            <option value="Arab tili">Arab tili</option>
+            <option value="Rus tili">Rus tili</option>
+            <option value="Ingliz tili">Ingliz tili</option>
+            <option value="Matematika">Matematika</option>
+            <option value="Mental arifmetikasi">Mental arifmetikasi</option>
+            <option value="Koreys tili">Koreys tili</option>
+            <option value="Hamshiralik">Hamshiralik</option>
+            <option value="Umumiy massaj kursi">Umumiy massaj kursi</option>
+          </select>
+          <div class="errline" id="errFan">Fanni tanlang</div>
+        </div>
+
+        <div class="field">
           <label>To'lov turi</label>
           <div class="toggle">
             <button type="button" class="naqd active" data-type="Naqd">Naqd pul</button>
@@ -351,7 +389,7 @@
 
   // ====== SOZLAMA: backend (Apps Script Web App) manzili ======
   // ====== SOZLAMA: backend (Apps Script Web App) manzili ======
-  const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzN5mknHgDmBK2YBIbUjl2pWZTEZ9bhJ5Dgk2HzR2Kiiplfa_BikQZst0fu3XUs-q_BPA/exec";
+  const BACKEND_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
   // ==============================================================
   // ==============================================================
 
@@ -376,6 +414,12 @@
       tolovTuri = btn.dataset.type;
       syncFieldsByType();
     });
+  });
+
+  const fanSelect = document.getElementById('fan');
+  fanSelect.addEventListener('change', ()=>{
+    fanSelect.classList.toggle('placeholder', !fanSelect.value);
+    if(fanSelect.value) showError('errFan', false);
   });
 
   const summaInput = document.getElementById('summa');
@@ -414,11 +458,13 @@
 
   document.getElementById('submitBtn').addEventListener('click', async ()=>{
     const ism = document.getElementById('ism').value.trim();
+    const fan = fanSelect.value;
     const summa = parseInt(summaInput.value || "0", 10);
     const kvitRaqam = document.getElementById('kvitRaqam').value.trim();
 
     let valid = true;
     if(!ism){ showError('errIsm', true); valid = false; } else showError('errIsm', false);
+    if(!fan){ showError('errFan', true); valid = false; } else showError('errFan', false);
     if(!summa || summa <= 0){ showError('errSumma', true); valid = false; } else showError('errSumma', false);
     if(tolovTuri === "Karta" && !imageBase64){ showError('errImg', true); valid = false; } else showError('errImg', false);
     if(!valid) return;
@@ -436,6 +482,7 @@
       telegram_username: user.username || "",
       telegram_first_name: user.first_name || "",
       ism: ism,
+      fan: fan,
       tolov_turi: tolovTuri,
       summa: summa,
       kvitansiya_raqami: tolovTuri === "Naqd" ? kvitRaqam : "",
@@ -480,6 +527,8 @@
   document.getElementById('newPaymentBtn').addEventListener('click', ()=>{
     // formani tozalab, boshidan boshlash
     document.getElementById('ism').value = "";
+    fanSelect.value = "";
+    fanSelect.classList.add('placeholder');
     document.getElementById('kvitRaqam').value = "";
     summaInput.value = "";
     totalVal.textContent = "0 so'm";
@@ -493,7 +542,7 @@
     document.querySelector('.toggle .naqd').classList.add('active');
     tolovTuri = "Naqd";
     syncFieldsByType();
-    showError('errIsm', false); showError('errSumma', false); showError('errImg', false);
+    showError('errIsm', false); showError('errFan', false); showError('errSumma', false); showError('errImg', false);
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = false;
